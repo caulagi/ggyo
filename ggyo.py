@@ -7,6 +7,7 @@ import os
 import sys
 from pathlib import Path
 
+from ansible.errors import AnsibleError
 from ansible.constants import DEFAULT_VAULT_ID_MATCH
 from ansible.parsing.vault import PromptVaultSecret, VaultEditor, VaultLib
 
@@ -15,32 +16,38 @@ CACHE_DIR = os.path.join(os.path.expanduser("~"), ".config", "ggyo")
 CACHE_FILENAME = "run"
 
 
-def _get_password():
-    secret = PromptVaultSecret(prompt_formats=["Vault password: "])
+def get_editor(secret):
+    return VaultEditor(VaultLib([(DEFAULT_VAULT_ID_MATCH, secret)]))
+
+
+def get_password(msg="Vault password: "):
+    secret = PromptVaultSecret(prompt_formats=[msg])
     secret.load()
     return secret
 
 
 def encrypt_files(input_dir, extension):
-    secret = _get_password()
+    secret = get_password()
+    secret_second_time = get_password(msg="Retype password: ")
+    try:
+        secret.confirm(secret.bytes, secret_second_time.bytes)
+    except AnsibleError as e:
+        print(e)
+        sys.exit(1)
     with open(os.path.join(CACHE_DIR, CACHE_FILENAME)) as cache_file:
         for fi in cache_file:
             fi = fi.strip()
             print(f"Encrypting {fi}")
-            v = VaultEditor(VaultLib([(DEFAULT_VAULT_ID_MATCH, secret)])).encrypt_file(
-                fi, secret, output_file=f"{fi}.{extension}"
-            )
+            get_editor(secret).encrypt_file(fi, secret, output_file=f"{fi}.{extension}")
 
 
 def decrypt_files(input_dir, extension):
-    secret = _get_password()
+    secret = get_password()
     Path(CACHE_DIR).mkdir(parents=True, exist_ok=True)
     with open(os.path.join(CACHE_DIR, CACHE_FILENAME), "w") as cache_file:
         for fi in Path(input_dir).glob(f"**/*.{extension}"):
             print(f"Decrypting {fi}")
-            v = VaultEditor(VaultLib([(DEFAULT_VAULT_ID_MATCH, secret)])).decrypt_file(
-                fi, output_file=os.path.splitext(fi)[0]
-            )
+            get_editor(secret).decrypt_file(fi, output_file=os.path.splitext(fi)[0])
             cache_file.write(f"{os.path.splitext(fi)[0]}\n")
 
 
