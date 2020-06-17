@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Work with ansible-vault files
 """
@@ -55,7 +55,7 @@ def handle_arguments():
     )
     parser.add_argument(
         "--input_dir",
-        default=".",
+        default=os.getcwd(),
         help="input directory for vault files (default: %(default)s)",
     )
     parser.add_argument("action", choices=["encrypt", "decrypt"])
