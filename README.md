@@ -16,7 +16,7 @@ usage: ggyo.py [-h] [--extension EXTENSION] [--input_dir INPUT_DIR]
 Work with ansible-vault files
 
 positional arguments:
-  {encrypt,decrypt}     Encrypt previously unvaulted files
+  {encrypt,decrypt}
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -24,7 +24,7 @@ optional arguments:
                         extension type for vault files (default: vault)
   --input_dir INPUT_DIR
                         input directory for vault files (default: .)
-  
+
 # decrypt files ending with vault
 $  ./ggyo.py decrypt --input_dir ~/jipu/src/anthos
 

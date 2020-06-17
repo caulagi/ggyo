@@ -58,12 +58,7 @@ def handle_arguments():
         default=".",
         help="input directory for vault files (default: %(default)s)",
     )
-    parser.add_argument(
-        "action",
-        help="Encrypt previously unvaulted files",
-        choices=["encrypt", "decrypt"],
-    )
-    parser.add_subparsers
+    parser.add_argument("action", choices=["encrypt", "decrypt"])
     args = parser.parse_args()
     return (args.action, args.input_dir, args.extension)
 
